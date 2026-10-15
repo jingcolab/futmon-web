@@ -1,0 +1,15 @@
+import{test}from'node:test';import assert from'node:assert/strict';import{normalizeTicker,validateMemo,valueScenario,markdownMemo,buildBrief,decodeStore}from'../core.mjs';
+const memo={id:'one',ticker:'aapl',company:'Example only',stage:'Exploring',asof:'2026-10-15',thesis:'User thesis',risks:'Risk',evidence:'Unverified notes',source:'https://www.sec.gov/edgar/search/',questions:'What is missing?',updated:'2026-10-15T00:00:00Z'};
+test('ticker normalization and punctuation',()=>{assert.equal(normalizeTicker(' brk.b '),'BRK.B');assert.equal(normalizeTicker('^GSPC'),'^GSPC');});
+test('ticker rejects markup, empty and overly long values',()=>{for(const x of['','<script>','A B','A'.repeat(17)])assert.throws(()=>normalizeTicker(x));});
+test('memo preserves user-authored multilingual text',()=>{const m=validateMemo({...memo,thesis:'研究笔记 <b>not markup</b>'});assert.equal(m.thesis,'研究笔记 <b>not markup</b>');assert.equal(m.ticker,'AAPL');});
+test('memo rejects invalid dates including overflow dates',()=>{for(const d of['','2026-02-30','not a date'])assert.throws(()=>validateMemo({...memo,asof:d}));});
+test('memo rejects executable and invalid source URLs',()=>{for(const s of['javascript:alert(1)','data:text/html,Hi','not a url'])assert.throws(()=>validateMemo({...memo,source:s}));});
+test('zero earnings growth scenario',()=>{assert.deepEqual(valueScenario({eps:5,price:100,years:5,growth:0,pe:20}),{endingEPS:5,value:100,annualized:0});});
+test('positive earnings growth scenario',()=>{const x=valueScenario({eps:5,price:100,years:5,growth:10,pe:20});assert.ok(Math.abs(x.value-161.051)<1e-8);assert.ok(Math.abs(x.annualized-10)<1e-8);});
+test('negative scenario annualization',()=>{const x=valueScenario({eps:5,price:100,years:5,growth:0,pe:12});assert.equal(x.value,60);assert.ok(x.annualized<0);});
+test('invalid inputs rejected',()=>{const base={eps:5,price:100,years:5,growth:5,pe:20};for(const patch of[{eps:0},{eps:-1},{price:0},{years:1.5},{years:16},{growth:-91},{pe:0},{eps:Infinity},{growth:NaN}])assert.throws(()=>valueScenario({...base,...patch}));});
+test('Markdown export contains all content and limitations',()=>{const s=markdownMemo(memo);assert.match(s,/User thesis/);assert.match(s,/Not verified by Futmon/);assert.match(s,/What is missing/);});
+test('brief distinguishes user data from verified facts',()=>{const s=buildBrief(memo,'Challenge');assert.match(s,/Challenge/);assert.match(s,/Never invent prices/);assert.match(s,/unverified evidence/);});
+test('saved store round trip',()=>{const rows=decodeStore(JSON.stringify({version:1,memos:[memo]}));assert.equal(rows.length,1);assert.equal(rows[0].ticker,'AAPL');});
+test('saved data corruption rejected',()=>{for(const x of['bad',JSON.stringify({version:2,memos:[]}),JSON.stringify({version:1,memos:[memo,memo]}),JSON.stringify({version:1,memos:[{...memo,updated:'bad'}]})])assert.throws(()=>decodeStore(x));});

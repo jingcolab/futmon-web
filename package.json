@@ -1,0 +1,1 @@
+{"name":"futmon-web","version":"1.0.0","private":true,"type":"module","description":"US equity research notebook and educational valuation tools","scripts":{"test":"node --test test/*.test.mjs"},"engines":{"node":">=20"}}

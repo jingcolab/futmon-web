@@ -1,0 +1,23 @@
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'none'
+  Permissions-Policy: camera=(), microphone=(), geolocation=()
+/
+  Content-Type: text/html; charset=utf-8
+/index.html
+  Content-Type: text/html; charset=utf-8
+/desk.html
+  Content-Type: text/html; charset=utf-8
+/privacy.html
+  Content-Type: text/html; charset=utf-8
+/style.css
+  Content-Type: text/css; charset=utf-8
+/desk.js
+  Content-Type: application/javascript; charset=utf-8
+/core.mjs
+  Content-Type: application/javascript; charset=utf-8
+/assets/financial-district.webp
+  Content-Type: image/webp
+/favicon.svg
+  Content-Type: image/svg+xml
